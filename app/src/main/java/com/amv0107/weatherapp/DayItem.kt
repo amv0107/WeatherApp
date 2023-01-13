@@ -1,7 +1,5 @@
 package com.amv0107.weatherapp
 
-import org.json.JSONArray
-
 data class DayItem(
     val city: String,
     val time: String,
