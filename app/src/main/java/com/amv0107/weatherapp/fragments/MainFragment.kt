@@ -13,11 +13,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.FragmentActivity
 import com.amv0107.weatherapp.R
 import com.amv0107.weatherapp.adapters.VpAdapter
+import com.amv0107.weatherapp.adapters.WeatherModel
 import com.amv0107.weatherapp.databinding.FragmentMainBinding
 import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.material.tabs.TabLayoutMediator
+import com.squareup.picasso.Picasso
+import org.json.JSONObject
 
 const val API_KEY = "63b1b262ab1740eca7e200224221806"
 
@@ -81,15 +84,32 @@ class MainFragment : Fragment() {
         val request = StringRequest(
             Request.Method.GET,
             url,
-            {
-                result, ->
-                Log.d("MyLog", "Result: $result")
-            }, {
-                error ->
+            { result ->
+                parseWeatherData(result)
+            }, { error ->
                 Log.d("MyLog", "Error: $error")
             }
         )
         queue.add(request)
+    }
+
+    private fun parseWeatherData(result: String) {
+        val mainObject = JSONObject(result)
+        val item = WeatherModel(
+            mainObject.getJSONObject("location").getString("name"),
+            mainObject.getJSONObject("current").getString("last_updated"),
+            mainObject.getJSONObject("current").getJSONObject("condition").getString("text"),
+            mainObject.getJSONObject("current").getString("temp_c"),
+            "",
+            "",
+            mainObject.getJSONObject("current").getJSONObject("condition").getString("icon"),
+            ""
+        )
+                Log.d("MyLog", "City: ${item.city}")
+                Log.d("MyLog", "Time: ${item.time}")
+                Log.d("MyLog", "Condition: ${item.condition}")
+                Log.d("MyLog", "CurrentTemp: ${item.currentTemp}")
+                Log.d("MyLog", "URL: ${item.imageUrl}")
     }
 
     companion object {
