@@ -73,7 +73,6 @@ class MainFragment : Fragment() {
             tvCondition.text = it.condition
             tvMaxMinTemp.text = maxMinTemp
             Picasso.get().load("https:" + it.imageUrl).into(imWeather)
-
         }
     }
 
