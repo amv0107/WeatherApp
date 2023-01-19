@@ -11,6 +11,8 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.activityViewModels
+import com.amv0107.weatherapp.MainViewModel
 import com.amv0107.weatherapp.R
 import com.amv0107.weatherapp.adapters.VpAdapter
 import com.amv0107.weatherapp.adapters.WeatherModel
@@ -36,6 +38,7 @@ class MainFragment : Fragment() {
     )
     private lateinit var binding: FragmentMainBinding
     private lateinit var pLauncher: ActivityResultLauncher<String>
+    private val model: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,7 +52,8 @@ class MainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         checkPermission()
         init()
-        requestWeatherData("London")
+        updateCurrentCard()
+        requestWeatherData("Berlin")
     }
 
     private fun init() = with(binding) {
@@ -58,6 +62,19 @@ class MainFragment : Fragment() {
         TabLayoutMediator(tabLayout, vp) { tab, pos ->
             tab.text = tList[pos]
         }.attach()
+    }
+
+    private fun updateCurrentCard() = with(binding) {
+        model.liveDataCurrent.observe(viewLifecycleOwner) {
+            val maxMinTemp = "${it.maxTemp}°C / ${it.minTemp}°C"
+            tvData.text = it.time
+            tvCity.text = it.city
+            tvCurrentTemp.text = it.currentTemp
+            tvCondition.text = it.condition
+            tvMaxMinTemp.text = maxMinTemp
+            Picasso.get().load("https:" + it.imageUrl).into(imWeather)
+
+        }
     }
 
     private fun permissionListener() {
@@ -110,15 +127,14 @@ class MainFragment : Fragment() {
             mainObject.getJSONObject("current").getJSONObject("condition").getString("icon"),
             weatherItem.hours
         )
-        Log.d("MyLog", "Max: ${item.maxTemp}")
-        Log.d("MyLog", "Min: ${item.minTemp}")
+        model.liveDataCurrent.value = item
     }
 
     private fun parseDays(mainObject: JSONObject): List<WeatherModel> {
         val list = ArrayList<WeatherModel>()
         val daysArray = mainObject.getJSONObject("forecast").getJSONArray("forecastday")
         val name = mainObject.getJSONObject("location").getString("name")
-        for (i in 0 until daysArray.length()){
+        for (i in 0 until daysArray.length()) {
             val day = daysArray[i] as JSONObject
             val item = WeatherModel(
                 name,
