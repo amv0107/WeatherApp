@@ -10,12 +10,20 @@ import com.amv0107.weatherapp.R
 import com.amv0107.weatherapp.databinding.ListItemBinding
 import com.squareup.picasso.Picasso
 
-class WeatherAdapter: ListAdapter<WeatherModel, WeatherAdapter.Holder>(Comparator()) {
+class WeatherAdapter(val listener: Listener?): ListAdapter<WeatherModel, WeatherAdapter.Holder>(Comparator()) {
 
-    class Holder(view: View): RecyclerView.ViewHolder(view){
+    class Holder(view: View, val listener: Listener?): RecyclerView.ViewHolder(view){
         val binding = ListItemBinding.bind(view)
+        var itemTemp : WeatherModel? = null
+
+        init {
+            itemView.setOnClickListener {
+                itemTemp?.let { it -> listener?.onClick(it) }
+            }
+        }
 
         fun bind(item: WeatherModel) = with(binding){
+            itemTemp = item
             tvDate.text = item.time
             tvCondition.text = item.condition
             tvTemp.text = item.currentTemp.ifEmpty {
@@ -27,7 +35,7 @@ class WeatherAdapter: ListAdapter<WeatherModel, WeatherAdapter.Holder>(Comparato
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.list_item, parent, false)
-        return Holder(view)
+        return Holder(view, listener)
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
@@ -43,6 +51,10 @@ class WeatherAdapter: ListAdapter<WeatherModel, WeatherAdapter.Holder>(Comparato
         override fun areContentsTheSame(oldItem: WeatherModel, newItem: WeatherModel): Boolean {
             return  oldItem == newItem
         }
+    }
+
+    interface Listener{
+        fun onClick(item: WeatherModel)
     }
 
 }
